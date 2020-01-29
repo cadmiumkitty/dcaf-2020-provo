@@ -63,3 +63,14 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 .flattened-pom.xml
+
+### VisualStudioCode ###
+.vscode/
+*/.settings
+*/.classpath
+*/.factorypath
+*/.project
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
