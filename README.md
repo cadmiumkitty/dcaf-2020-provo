@@ -6,14 +6,16 @@ The purpose of this demo is to show capturing of the provenance information usin
 
 ## Set up
 
- 1. Simplest Kafka set up with single Zookeeper node and single Kafka node.
- 1. Simple Repo producer that creates and amends repo trades
- 1. Simple Risk calculator that calculates risk figures based on repo events
- 1. Simple provenance aggregator exposing SPARQL endpoint for provenance queries
+ 1. Single Kafka node with single Zookeeper node
+ 1. Repo producer that creates and amends repo trades based on trade events
+ 1. Counterparty producer that creates and amends counterparty records
+ 1. Risk calculator that calculates risk figures based on repo events
+ 1. Provenance aggregator as a Kafka Connect node
+ 1. Simple Jena Fuseki triplestore to aggregate PROV data
+ 1. Prov-O-Viz set up for simple visualization
 
 ## Running the demo
 
 ```
 docker-compose up -d --build
 ```
-

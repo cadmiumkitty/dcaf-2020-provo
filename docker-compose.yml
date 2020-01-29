@@ -28,3 +28,10 @@ services:
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_LOG_RETENTION_BYTES: "100000000"
       KAFKA_ZOOKEEPER_CONNECT:  zookeeper:2181
+  fuseki:
+    image: fuseki
+    build: fuseki
+    ports:
+      - 3030:3030
+    volumes:
+      - ./fuseki-dcaf:/apache-jena-fuseki-3.14.0/dcaf

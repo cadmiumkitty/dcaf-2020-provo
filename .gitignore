@@ -1,3 +1,6 @@
+### Docker container volumes ###
+fuseki-dcaf/
+
 ### Java ###
 # Compiled class file
 *.class
