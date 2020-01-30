@@ -28,6 +28,15 @@ services:
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_LOG_RETENTION_BYTES: "100000000"
       KAFKA_ZOOKEEPER_CONNECT:  zookeeper:2181
+  connect:
+    image: connect
+    build: connect
+    depends_on:
+      - kafka
+    links: 
+      - kafka
+    ports:
+      - "8083:8083"
   fuseki:
     image: fuseki
     build: fuseki

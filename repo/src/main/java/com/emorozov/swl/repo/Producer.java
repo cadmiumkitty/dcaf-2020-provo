@@ -28,10 +28,10 @@ import java.util.UUID;
 @Log
 public class Producer {
 
-  @Value("repo.topic.repo")
+  @Value("${repo.topic.repo}")
   private String repoTopic;
 
-  @Value("repo.topic.prov")
+  @Value("${repo.topic.prov}")
   private String provTopic;
 
   @Autowired
