@@ -70,8 +70,8 @@ public class TradeEventProcessor {
     int oldTradeVersionNumber = tradeVersionCounter;
     int newTradeVersionNumber = ++tradeVersionCounter;
 
-    String tradeMessage = createTradeFromEvent(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
-    String provMessage = createProvFromEventAndTrade(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId,
+    String tradeMessage = createTradeFromTradeEvent(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
+    String provMessage = createProvFromTradeEvent(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId,
         odt);
 
     log.info(tradeMessage);
@@ -81,14 +81,14 @@ public class TradeEventProcessor {
     this.kafkaTemplate.send(provTopic, provMessage);
   }
 
-  private String createTradeFromEvent(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
+  private String createTradeFromTradeEvent(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
       String eventId, OffsetDateTime odt) {
-    return String.format("Correction %s for trade %s at %s. Old trade version %s. New trade version is %s.", tradeId,
+    return String.format("Correction %s for trade %s at %s (version %s -> %s)", tradeId,
         eventId, odt.toString(), oldTradeVersionNumber, newTradeVersionNumber);
   }
 
   @SneakyThrows
-  private String createProvFromEventAndTrade(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
+  private String createProvFromTradeEvent(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
       String eventId, OffsetDateTime odt) {
 
     QualifiedName tradeQn = qn(String.format("trade-%s", tradeId));
@@ -110,7 +110,7 @@ public class TradeEventProcessor {
 
     Activity tradeCorrection = provFactory.newActivity(tradeCorrectionQn, xmlgcStartTime, xmlgcEndTime,
         Collections.emptyList());
-    provFactory.addLabel(tradeCorrection, "Trade correction.");
+    provFactory.addLabel(tradeCorrection, String.format("Trade correction on %s", odt.toString()));
 
     WasGeneratedBy newTradeVersionWasGeneratedBy = provFactory.newWasGeneratedBy(null, newTradeVersionQn,
         tradeCorrectionQn);
@@ -139,6 +139,6 @@ public class TradeEventProcessor {
   }
 
   public QualifiedName qn(String name) {
-    return ns.qualifiedName("swl", name, provFactory);
+    return ns.qualifiedName(RepoConfiguration.SWL_PREFIX, name, provFactory);
   }
 }

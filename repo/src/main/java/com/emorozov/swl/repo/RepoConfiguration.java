@@ -9,6 +9,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RepoConfiguration {
 
+  public static final String SWL_PREFIX = "swl";
+
+  public static final String SWL_NAMESPACE = "http://semanticweblondon.com/";
+
   @Bean
   public ProvFactory provFactory() {
     return InteropFramework.getDefaultFactory();
@@ -18,7 +22,7 @@ public class RepoConfiguration {
   public Namespace namespace() {
     Namespace ns = new Namespace();
     ns.addKnownNamespaces();
-    ns.register("swl", "http://semanticweblondon.com/");
+    ns.register(SWL_PREFIX, SWL_NAMESPACE);
     return ns;
   }
 
