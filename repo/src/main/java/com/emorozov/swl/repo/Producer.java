@@ -87,7 +87,7 @@ public class Producer {
 
     interopFramework.writeDocument(baos, Formats.ProvFormat.TURTLE, repoEventProvDocument);
 
-    return String.format("Provenance record: %s", baos.toString());
+    return baos.toString();
   }
 
   public QualifiedName qn(String name) {

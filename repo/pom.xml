@@ -10,10 +10,10 @@
 		<relativePath/>
 	</parent>
 
-	<groupId>com.emorozov.dcaf</groupId>
+	<groupId>com.emorozov.swl</groupId>
 	<artifactId>repo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>dacf-repo</name>
+	<name>dcaf-repo</name>
 	
 	<dependencies>
 		<dependency>
@@ -34,14 +34,12 @@
 			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.10</version>
       <scope>provided</scope>
     </dependency>
-
 		<dependency>
 			<groupId>org.openprovenance.prov</groupId>
 			<artifactId>prov-model</artifactId>
