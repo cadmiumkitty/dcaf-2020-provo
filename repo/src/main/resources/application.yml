@@ -6,5 +6,7 @@ spring:
         value-serializer: org.apache.kafka.common.serialization.StringSerializer
 repo:
   topic:
-    prov: prov
-    repo: repo
+    prov-topic: prov
+    trade-topic: trade
+    counterparty-topic: counterparty
+    risk-topic: risk

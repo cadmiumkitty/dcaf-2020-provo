@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ProducerConfiguration {
+public class RepoConfiguration {
 
   @Bean
   public ProvFactory provFactory() {
@@ -18,7 +18,7 @@ public class ProducerConfiguration {
   public Namespace namespace() {
     Namespace ns = new Namespace();
     ns.addKnownNamespaces();
-    ns.register("swl", "https://semanticweblondon.com/");
+    ns.register("swl", "http://semanticweblondon.com/");
     return ns;
   }
 

@@ -22,7 +22,7 @@ services:
     environment:
       KAFKA_LOG_DIRS: /kafka
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: repo:1:1,prov:1:1
+      KAFKA_CREATE_TOPICS: trade:1:1,couterparty:1:1,risk:1:1,prov:1:1
       HOSTNAME_COMMAND: "/sbin/ip route | awk '/default/ { print $$3 }'"
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_LOG_RETENTION_HOURS: "168"
