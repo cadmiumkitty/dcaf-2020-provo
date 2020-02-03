@@ -139,6 +139,6 @@ public class TradeEventProcessor {
   }
 
   public QualifiedName qn(String name) {
-    return ns.qualifiedName(RepoConfiguration.SWL_PREFIX, name, provFactory);
+    return ns.qualifiedName(EventProcessorConfiguration.SWL_PREFIX, name, provFactory);
   }
 }
