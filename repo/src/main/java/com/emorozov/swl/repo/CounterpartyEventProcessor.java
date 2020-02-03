@@ -51,13 +51,13 @@ public class CounterpartyEventProcessor {
   @Autowired
   private InteropFramework interopFramework;
 
-  @Value("${repo.topic.counterparty-topic}")
-  private String counterpartyTopic;
+  @Value("${repo.topic.counterparties-topic}")
+  private String counterpartiesTopic;
 
   @Value("${repo.topic.prov-topic}")
   private String provTopic;
 
-  private String counterpartyId = UUID.randomUUID().toString();
+  private String counterpartyId = "cpty-1";
 
   private int counterpartyVersionCounter = 5;
 
@@ -75,10 +75,7 @@ public class CounterpartyEventProcessor {
     String provMessage = createProvCounterpartyEvent(counterpartyId, oldCounterpartyVersionNumber,
         newCounterpartyVersionNumber, eventId, odt);
 
-    log.info(counterpartyMessage);
-    log.info(provMessage);
-
-    this.kafkaTemplate.send(counterpartyTopic, counterpartyMessage);
+    this.kafkaTemplate.send(counterpartiesTopic, counterpartyId, counterpartyMessage);
     this.kafkaTemplate.send(provTopic, provMessage);
   }
 

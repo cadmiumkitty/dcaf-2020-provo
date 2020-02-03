@@ -9,9 +9,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableAutoConfiguration
+@EnableKafka
+@EnableKafkaStreams
+@EnableScheduling
 public class Application {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
+    Thread.sleep(15000L);
     SpringApplication.run(Application.class, args);
   }
 }

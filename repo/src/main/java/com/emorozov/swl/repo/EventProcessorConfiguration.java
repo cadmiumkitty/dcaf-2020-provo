@@ -5,10 +5,8 @@ import org.openprovenance.prov.model.Namespace;
 import org.openprovenance.prov.model.ProvFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
-@EnableScheduling
 public class EventProcessorConfiguration {
 
   public static final String SWL_PREFIX = "swl";

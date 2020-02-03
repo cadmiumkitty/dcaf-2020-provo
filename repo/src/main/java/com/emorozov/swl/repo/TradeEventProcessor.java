@@ -51,13 +51,15 @@ public class TradeEventProcessor {
   @Autowired
   private InteropFramework interopFramework;
 
-  @Value("${repo.topic.trade-topic}")
-  private String tradeTopic;
+  @Value("${repo.topic.trades-topic}")
+  private String tradesTopic;
 
   @Value("${repo.topic.prov-topic}")
   private String provTopic;
 
   private String tradeId = UUID.randomUUID().toString();
+
+  private String counterpartyId = "cpty-1";
 
   private int tradeVersionCounter = 5;
 
@@ -74,10 +76,7 @@ public class TradeEventProcessor {
     String provMessage = createProvFromTradeEvent(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId,
         odt);
 
-    log.info(tradeMessage);
-    log.info(provMessage);
-
-    this.kafkaTemplate.send(tradeTopic, tradeMessage);
+    this.kafkaTemplate.send(tradesTopic, counterpartyId, tradeMessage);
     this.kafkaTemplate.send(provTopic, provMessage);
   }
 

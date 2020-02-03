@@ -1,14 +1,12 @@
 spring:
-   kafka:
-     producer:
-        bootstrap-servers: kafka:9092
-        key-serializer: org.apache.kafka.common.serialization.StringSerializer
-        value-serializer: org.apache.kafka.common.serialization.StringSerializer
-     consumer:
-        bootstrap-servers: kafka:9092
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 repo:
   topic:
     prov-topic: prov
-    trade-topic: trade
-    counterparty-topic: counterparty
+    trades-topic: trades
+    counterparties-topic: counterparties
     risk-topic: risk

@@ -3,18 +3,22 @@ services:
   repo:
     image: repo
     build: repo
+    depends_on:
+      - kafka
   provoviz:
     image: provoviz
     build: provoviz
     ports:
       - 5000:5000
+    depends_on:
+      - kafka
   zookeeper:
     image: zookeeper:3.5.6
     restart: always
     ports:
       - 2181:2181
   kafka:
-    image: wurstmeister/kafka:2.12-2.4.0
+    image: wurstmeister/kafka:2.12-2.3.1
     depends_on:
       - zookeeper
     ports:
@@ -22,18 +26,17 @@ services:
     environment:
       KAFKA_LOG_DIRS: /kafka
       KAFKA_BROKER_ID: 1
-      KAFKA_CREATE_TOPICS: trade:1:1,couterparty:1:1,risk:1:1,prov:1:1
-      HOSTNAME_COMMAND: "/sbin/ip route | awk '/default/ { print $$3 }'"
+      KAFKA_CREATE_TOPICS: trades:1:1,counterparties:1:1,risk:1:1,prov:1:1
+      HOSTNAME_COMMAND: "/sbin/ip route | awk '{ print $$3 }' | cut -f2 -d: | head -n1"
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_LOG_RETENTION_HOURS: "168"
       KAFKA_LOG_RETENTION_BYTES: "100000000"
-      KAFKA_ZOOKEEPER_CONNECT:  zookeeper:2181
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   connect:
     image: connect
     build: connect
     depends_on:
-      - kafka
-    links: 
       - kafka
     ports:
       - "8083:8083"
@@ -43,4 +46,4 @@ services:
     ports:
       - 3030:3030
     volumes:
-      - ./fuseki-dcaf:/apache-jena-fuseki-3.14.0/dcaf
+      - ./fuseki-volume-dcaf:/apache-jena-fuseki-3.14.0/dcaf
