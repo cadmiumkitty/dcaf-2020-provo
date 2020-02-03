@@ -59,9 +59,9 @@ public class TradeEventProcessor {
 
   private String tradeId = UUID.randomUUID().toString();
 
-  private String counterpartyId = "cpty-1";
+  private String counterpartyId = "bankabc";
 
-  private int tradeVersionCounter = 5;
+  private int tradeVersionCounter = 0;
 
   @Scheduled(fixedRate = 30000)
   public void sendMessage() {
@@ -72,23 +72,24 @@ public class TradeEventProcessor {
     int oldTradeVersionNumber = tradeVersionCounter;
     int newTradeVersionNumber = ++tradeVersionCounter;
 
-    String tradeMessage = createTradeFromTradeEvent(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
-    String provMessage = createProvFromTradeEvent(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId,
-        odt);
+    String tradeMessage = createTradeMessage(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
+    String provMessage = createProvMessage(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
 
     this.kafkaTemplate.send(tradesTopic, counterpartyId, tradeMessage);
     this.kafkaTemplate.send(provTopic, provMessage);
   }
 
-  private String createTradeFromTradeEvent(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
+  private String createTradeMessage(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
       String eventId, OffsetDateTime odt) {
-    return String.format("Correction %s for trade %s at %s (version %s -> %s)", tradeId,
-        eventId, odt.toString(), oldTradeVersionNumber, newTradeVersionNumber);
+
+    log.info("Correction {} for trade {} at {} (version {} -> {})", eventId, tradeId, odt.toString(),
+        oldTradeVersionNumber, newTradeVersionNumber);
+    return String.format("%s-%s", tradeId, newTradeVersionNumber);
   }
 
   @SneakyThrows
-  private String createProvFromTradeEvent(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
-      String eventId, OffsetDateTime odt) {
+  private String createProvMessage(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber, String eventId,
+      OffsetDateTime odt) {
 
     QualifiedName tradeQn = qn(String.format("trade-%s", tradeId));
     QualifiedName oldTradeVersionQn = qn(String.format("trade-%s-%s", tradeId, oldTradeVersionNumber));

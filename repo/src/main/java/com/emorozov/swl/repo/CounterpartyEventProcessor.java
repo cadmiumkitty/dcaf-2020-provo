@@ -39,110 +39,112 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Slf4j
 public class CounterpartyEventProcessor {
 
-  @Autowired
-  private KafkaTemplate<String, String> kafkaTemplate;
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
-  @Autowired
-  private Namespace ns;
+    @Autowired
+    private Namespace ns;
 
-  @Autowired
-  private ProvFactory provFactory;
+    @Autowired
+    private ProvFactory provFactory;
 
-  @Autowired
-  private InteropFramework interopFramework;
+    @Autowired
+    private InteropFramework interopFramework;
 
-  @Value("${repo.topic.counterparties-topic}")
-  private String counterpartiesTopic;
+    @Value("${repo.topic.counterparties-topic}")
+    private String counterpartiesTopic;
 
-  @Value("${repo.topic.prov-topic}")
-  private String provTopic;
+    @Value("${repo.topic.prov-topic}")
+    private String provTopic;
 
-  private String counterpartyId = "cpty-1";
+    private String counterpartyId = "bankabc";
 
-  private int counterpartyVersionCounter = 5;
+    private int counterpartyVersionCounter = 0;
 
-  @Scheduled(fixedRate = 30000, initialDelay = 15000)
-  public void sendMessage() {
+    @Scheduled(fixedRate = 30000, initialDelay = 10000)
+    public void sendMessage() {
 
-    String eventId = UUID.randomUUID().toString();
-    OffsetDateTime odt = OffsetDateTime.now();
+        String eventId = UUID.randomUUID().toString();
+        OffsetDateTime odt = OffsetDateTime.now();
 
-    int oldCounterpartyVersionNumber = counterpartyVersionCounter;
-    int newCounterpartyVersionNumber = ++counterpartyVersionCounter;
+        int oldCounterpartyVersionNumber = counterpartyVersionCounter;
+        int newCounterpartyVersionNumber = ++counterpartyVersionCounter;
 
-    String counterpartyMessage = createCounterpartyFromCounterpartyEvent(counterpartyId, oldCounterpartyVersionNumber,
-        newCounterpartyVersionNumber, eventId, odt);
-    String provMessage = createProvCounterpartyEvent(counterpartyId, oldCounterpartyVersionNumber,
-        newCounterpartyVersionNumber, eventId, odt);
+        String counterpartyMessage = createCounterpartyMessage(counterpartyId,
+                oldCounterpartyVersionNumber, newCounterpartyVersionNumber, eventId, odt);
+        String provMessage = createProvMessage(counterpartyId, oldCounterpartyVersionNumber,
+                newCounterpartyVersionNumber, eventId, odt);
 
-    this.kafkaTemplate.send(counterpartiesTopic, counterpartyId, counterpartyMessage);
-    this.kafkaTemplate.send(provTopic, provMessage);
-  }
+        this.kafkaTemplate.send(counterpartiesTopic, counterpartyId, counterpartyMessage);
+        this.kafkaTemplate.send(provTopic, provMessage);
+    }
 
-  private String createCounterpartyFromCounterpartyEvent(String counterpartyId, int oldCounterpartyVersionNumber,
-      int newCounterpartyVersionNumber, String eventId, OffsetDateTime odt) {
-    return String.format(
-        "Counterparty credit rating update %s for counterparty %s at %s (version %s -> %s)",
-        counterpartyId, eventId, odt.toString(), oldCounterpartyVersionNumber, newCounterpartyVersionNumber);
-  }
+    private String createCounterpartyMessage(String counterpartyId, int oldCounterpartyVersionNumber,
+            int newCounterpartyVersionNumber, String eventId, OffsetDateTime odt) {
 
-  @SneakyThrows
-  private String createProvCounterpartyEvent(String counterpartyId, int oldCounterpartyVersionNumber,
-      int newCounterpartyVersionNumber, String eventId, OffsetDateTime odt) {
+        log.info("Counterparty credit rating update {} for counterparty {} at {} (version {} -> {})", eventId,
+                counterpartyId, odt.toString(), oldCounterpartyVersionNumber, newCounterpartyVersionNumber);
+        return String.format("%s-%s", counterpartyId, newCounterpartyVersionNumber);
+    }
 
-    QualifiedName counterpartyQn = qn(String.format("cpty-%s", counterpartyId));
-    QualifiedName oldCounterpartyVersionQn = qn(
-        String.format("cpty-%s-%s", counterpartyId, oldCounterpartyVersionNumber));
-    QualifiedName newCounterpartyVersionQn = qn(
-        String.format("cpty-%s-%s", counterpartyId, newCounterpartyVersionNumber));
-    QualifiedName counterpartyUpdateQn = qn(String.format("update-%s", eventId));
-    QualifiedName operationsQn = qn("michaelgray");
-    QualifiedName counterpartyEventProcessorQn = qn("cpty-event-processor");
+    @SneakyThrows
+    private String createProvMessage(String counterpartyId, int oldCounterpartyVersionNumber,
+            int newCounterpartyVersionNumber, String eventId, OffsetDateTime odt) {
 
-    Entity counterparty = provFactory.newEntity(counterpartyQn, "Bank X.");
-    Entity newCounterpartyVersion = provFactory.newEntity(newCounterpartyVersionQn,
-        String.format("Counterparty version %s", newCounterpartyVersionNumber));
-    SpecializationOf newCounterpartyVersionSpecializationOf = provFactory.newSpecializationOf(newCounterpartyVersionQn,
-        counterpartyQn);
+        QualifiedName counterpartyQn = qn(String.format("cpty-%s", counterpartyId));
+        QualifiedName oldCounterpartyVersionQn = qn(
+                String.format("cpty-%s-%s", counterpartyId, oldCounterpartyVersionNumber));
+        QualifiedName newCounterpartyVersionQn = qn(
+                String.format("cpty-%s-%s", counterpartyId, newCounterpartyVersionNumber));
+        QualifiedName counterpartyUpdateQn = qn(String.format("update-%s", eventId));
+        QualifiedName operationsQn = qn("michaelgray");
+        QualifiedName counterpartyEventProcessorQn = qn("cpty-event-processor");
 
-    GregorianCalendar gcStartTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
-    XMLGregorianCalendar xmlgcStartTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcStartTime);
-    GregorianCalendar gcEndTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
-    XMLGregorianCalendar xmlgcEndTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcEndTime);
+        Entity counterparty = provFactory.newEntity(counterpartyQn, "Bank X.");
+        Entity newCounterpartyVersion = provFactory.newEntity(newCounterpartyVersionQn,
+                String.format("Counterparty version %s", newCounterpartyVersionNumber));
+        SpecializationOf newCounterpartyVersionSpecializationOf = provFactory
+                .newSpecializationOf(newCounterpartyVersionQn, counterpartyQn);
 
-    Activity counterpartyUpdate = provFactory.newActivity(counterpartyUpdateQn, xmlgcStartTime, xmlgcEndTime,
-        Collections.emptyList());
-    provFactory.addLabel(counterpartyUpdate, String.format("Counterparty credit rating update on %s", odt.toString()));
+        GregorianCalendar gcStartTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
+        XMLGregorianCalendar xmlgcStartTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcStartTime);
+        GregorianCalendar gcEndTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
+        XMLGregorianCalendar xmlgcEndTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcEndTime);
 
-    WasGeneratedBy newCounterpartyVersionWasGeneratedBy = provFactory.newWasGeneratedBy(null, newCounterpartyVersionQn,
-        counterpartyUpdateQn);
+        Activity counterpartyUpdate = provFactory.newActivity(counterpartyUpdateQn, xmlgcStartTime, xmlgcEndTime,
+                Collections.emptyList());
+        provFactory.addLabel(counterpartyUpdate,
+                String.format("Counterparty credit rating update on %s", odt.toString()));
 
-    Agent operations = provFactory.newAgent(operationsQn, "Michael Gray");
-    WasStartedBy wasStartedBy = provFactory.newWasStartedBy(null, counterpartyUpdateQn, operationsQn);
-    WasEndedBy wasEndedBy = provFactory.newWasEndedBy(null, counterpartyUpdateQn, operationsQn);
+        WasGeneratedBy newCounterpartyVersionWasGeneratedBy = provFactory.newWasGeneratedBy(null,
+                newCounterpartyVersionQn, counterpartyUpdateQn);
 
-    Agent counterpartyEventProcessor = provFactory.newAgent(counterpartyEventProcessorQn,
-        "Counterparty Event Processor");
-    WasAssociatedWith wasAssociatedWith = provFactory.newWasAssociatedWith(null, counterpartyUpdateQn,
-        counterpartyEventProcessorQn);
+        Agent operations = provFactory.newAgent(operationsQn, "Michael Gray");
+        WasStartedBy wasStartedBy = provFactory.newWasStartedBy(null, counterpartyUpdateQn, operationsQn);
+        WasEndedBy wasEndedBy = provFactory.newWasEndedBy(null, counterpartyUpdateQn, operationsQn);
 
-    WasDerivedFrom counterpartyVersionDerivation = provFactory.newWasDerivedFrom(null, newCounterpartyVersionQn,
-        oldCounterpartyVersionQn);
+        Agent counterpartyEventProcessor = provFactory.newAgent(counterpartyEventProcessorQn,
+                "Counterparty Event Processor");
+        WasAssociatedWith wasAssociatedWith = provFactory.newWasAssociatedWith(null, counterpartyUpdateQn,
+                counterpartyEventProcessorQn);
 
-    Document repoEventProvDocument = provFactory.newDocument();
-    repoEventProvDocument.getStatementOrBundle()
-        .addAll(Arrays.asList(counterparty, newCounterpartyVersion, newCounterpartyVersionSpecializationOf,
-            counterpartyUpdate, newCounterpartyVersionWasGeneratedBy, operations, wasStartedBy, wasEndedBy,
-            counterpartyEventProcessor, wasAssociatedWith, counterpartyVersionDerivation));
-    repoEventProvDocument.setNamespace(ns);
+        WasDerivedFrom counterpartyVersionDerivation = provFactory.newWasDerivedFrom(null, newCounterpartyVersionQn,
+                oldCounterpartyVersionQn);
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    interopFramework.writeDocument(baos, Formats.ProvFormat.TURTLE, repoEventProvDocument);
+        Document repoEventProvDocument = provFactory.newDocument();
+        repoEventProvDocument.getStatementOrBundle()
+                .addAll(Arrays.asList(counterparty, newCounterpartyVersion, newCounterpartyVersionSpecializationOf,
+                        counterpartyUpdate, newCounterpartyVersionWasGeneratedBy, operations, wasStartedBy, wasEndedBy,
+                        counterpartyEventProcessor, wasAssociatedWith, counterpartyVersionDerivation));
+        repoEventProvDocument.setNamespace(ns);
 
-    return baos.toString();
-  }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        interopFramework.writeDocument(baos, Formats.ProvFormat.TURTLE, repoEventProvDocument);
 
-  public QualifiedName qn(String name) {
-    return ns.qualifiedName(EventProcessorConfiguration.SWL_PREFIX, name, provFactory);
-  }
+        return baos.toString();
+    }
+
+    public QualifiedName qn(String name) {
+        return ns.qualifiedName(EventProcessorConfiguration.SWL_PREFIX, name, provFactory);
+    }
 }

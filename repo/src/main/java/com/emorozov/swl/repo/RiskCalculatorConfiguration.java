@@ -33,8 +33,8 @@ public class RiskCalculatorConfiguration {
     props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
     props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
-    props.put(StreamsConfig.producerPrefix(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG), 1); 
-    props.put(StreamsConfig.producerPrefix(ProducerConfig.ACKS_CONFIG), "1"); 
+    props.put(StreamsConfig.producerPrefix(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG), 1);
+    props.put(StreamsConfig.producerPrefix(ProducerConfig.ACKS_CONFIG), "1");
     return new KafkaStreamsConfiguration(props);
   }
 
@@ -52,11 +52,12 @@ public class RiskCalculatorConfiguration {
   }
 
   @Bean
-  public KStream<String, String> trades(StreamsBuilder kStreamBuilder, KStream<String, String> counterparties) {
+  public KStream<String, String> trades(StreamsBuilder kStreamBuilder, KStream<String, String> counterparties,
+      RiskCalculator riskCalculator) {
     KStream<String, String> trades = kStreamBuilder.stream("trades");
     trades.outerJoin(counterparties,
-        (trade, counterparty) -> "<http://semanticweblondon.com/risk> a <http://www.w3.org/ns/prov#Entity> .",
-        JoinWindows.of(Duration.ofSeconds(45))).to("prov");
+        (trade, counterparty) -> riskCalculator.calculate(trade, counterparty),
+        JoinWindows.of(Duration.ofSeconds(50))).to("prov");
     return trades;
   }
 }
