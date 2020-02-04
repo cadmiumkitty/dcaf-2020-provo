@@ -106,7 +106,8 @@ public class TradeEventProcessor {
 
     Activity tradeCorrection = provFactory.newActivity(tradeCorrectionQn, xmlgcStartTime, xmlgcEndTime,
         Collections.emptyList());
-    provFactory.addLabel(tradeCorrection, String.format("Trade correction on %s", odt.format(DEFAULT_FORMATTER)));
+    provFactory.addLabel(tradeCorrection,
+        String.format("Correction for trade %s on %s", tradeId, odt.format(DEFAULT_FORMATTER)));
 
     WasGeneratedBy newTradeVersionWasGeneratedBy = provFactory.newWasGeneratedBy(null, newTradeVersionQn,
         tradeCorrectionQn);

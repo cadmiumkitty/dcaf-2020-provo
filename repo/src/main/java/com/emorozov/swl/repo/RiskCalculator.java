@@ -64,16 +64,21 @@ public class RiskCalculator {
     QualifiedName riskCalculatorQn = qn("risk-calculator-1");
 
     Entity risk = provFactory.newEntity(riskQn,
-        String.format("Risk for trade %s counterparty %s at %s", trade, counterparty, odt.format(DEFAULT_FORMATTER)));
+        String.format("Risk for trade version %s counterparty version %s at %s", trade, counterparty, odt.format(DEFAULT_FORMATTER)));
 
     GregorianCalendar gcStartTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
     XMLGregorianCalendar xmlgcStartTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcStartTime);
     GregorianCalendar gcEndTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
     XMLGregorianCalendar xmlgcEndTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcEndTime);
 
+    // This is a bit of magic to make search look nicer. In reall application we'll
+    // be dealing with
+    // full-fledged trades and counterparties and so can extract the data
     Activity riskCalculation = provFactory.newActivity(riskCalculationQn, xmlgcStartTime, xmlgcEndTime,
         Collections.emptyList());
-    provFactory.addLabel(riskCalculation, String.format("Risk calculation at %s", odt.format(DEFAULT_FORMATTER)));
+    provFactory.addLabel(riskCalculation,
+        String.format("Risk RR 10M FNMA 7.125 01-15-30 trade version %s counterparty version %s at %s", trade, counterparty,
+            odt.format(DEFAULT_FORMATTER)));
 
     Used riskCalculationUsedTrade = provFactory.newUsed(null, riskCalculationQn, tradeVersionQn);
     Used riskCalculationUsedCounterparty = provFactory.newUsed(null, riskCalculationQn, counterpartyVersionQn);
