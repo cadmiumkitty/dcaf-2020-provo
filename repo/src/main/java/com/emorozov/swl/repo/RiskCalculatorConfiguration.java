@@ -26,6 +26,11 @@ public class RiskCalculatorConfiguration {
 
   @Bean(name = KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
   public KafkaStreamsConfiguration kStreamsConfigs() {
+
+    // Spring does not support all of the propersites, for example
+    // DEFAULT_KEY_SERDE_CLASS_CONFIG, DEFAULT_VALUE_SERDE_CLASS_CONFIG,
+    // DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG
+    // in the config file so we have to set it up manually here
     final Map<String, Object> props = new HashMap<>();
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, "risk");
@@ -54,10 +59,15 @@ public class RiskCalculatorConfiguration {
   @Bean
   public KStream<String, String> trades(StreamsBuilder kStreamBuilder, KStream<String, String> counterparties,
       RiskCalculator riskCalculator) {
+
+    // In this simple app just join two KStreams to simulate calculation of
+    // counterparty risk. Ignore more complex topology required to emit two
+    // different messages on different topics, and just record the provenance so
+    // that we can visualize it.
     KStream<String, String> trades = kStreamBuilder.stream("trades");
     trades.outerJoin(counterparties,
-        (trade, counterparty) -> riskCalculator.calculate(trade, counterparty),
-        JoinWindows.of(Duration.ofSeconds(50))).to("prov");
+        (trade, counterparty) -> riskCalculator.calculateRiskAndRecordProvenance(trade, counterparty),
+        JoinWindows.of(Duration.ofSeconds(50))).filterNot((k, v) -> v.startsWith("ERROR")).to("prov");
     return trades;
   }
 }

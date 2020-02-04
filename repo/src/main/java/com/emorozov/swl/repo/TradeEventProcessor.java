@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayOutputStream;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.GregorianCalendar;
@@ -38,6 +39,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Component
 @Slf4j
 public class TradeEventProcessor {
+
+  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("YYYYMMDD-HHmmSS");
 
   @Autowired
   private KafkaTemplate<String, String> kafkaTemplate;
@@ -51,21 +54,14 @@ public class TradeEventProcessor {
   @Autowired
   private InteropFramework interopFramework;
 
-  @Value("${repo.topic.trades-topic}")
-  private String tradesTopic;
-
-  @Value("${repo.topic.prov-topic}")
-  private String provTopic;
-
   private String tradeId = UUID.randomUUID().toString();
-
-  private String counterpartyId = "bankabc";
 
   private int tradeVersionCounter = 0;
 
   @Scheduled(fixedRate = 30000)
   public void sendMessage() {
 
+    String counterpartyId = "bank-x";
     String eventId = UUID.randomUUID().toString();
     OffsetDateTime odt = OffsetDateTime.now();
 
@@ -75,14 +71,15 @@ public class TradeEventProcessor {
     String tradeMessage = createTradeMessage(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
     String provMessage = createProvMessage(tradeId, oldTradeVersionNumber, newTradeVersionNumber, eventId, odt);
 
-    this.kafkaTemplate.send(tradesTopic, counterpartyId, tradeMessage);
-    this.kafkaTemplate.send(provTopic, provMessage);
+    // Ignores transactions in this simple example
+    this.kafkaTemplate.send("trades", counterpartyId, tradeMessage);
+    this.kafkaTemplate.send("prov", provMessage);
   }
 
   private String createTradeMessage(String tradeId, int oldTradeVersionNumber, int newTradeVersionNumber,
       String eventId, OffsetDateTime odt) {
 
-    log.info("Correction {} for trade {} at {} (version {} -> {})", eventId, tradeId, odt.toString(),
+    log.info("Correction {} for trade {} at {} (version {} -> {})", eventId, tradeId, odt.format(DEFAULT_FORMATTER),
         oldTradeVersionNumber, newTradeVersionNumber);
     return String.format("%s-%s", tradeId, newTradeVersionNumber);
   }
@@ -98,9 +95,9 @@ public class TradeEventProcessor {
     QualifiedName traderQn = qn("johnsmith");
     QualifiedName tradeEventProcessorQn = qn("trade-event-processor");
 
-    Entity trade = provFactory.newEntity(tradeQn, "Term Repo.");
+    Entity trade = provFactory.newEntity(tradeQn, "R 10M FNMA 7.125 01-15-30");
     Entity newTradeVersion = provFactory.newEntity(newTradeVersionQn,
-        String.format("Term Repo version %s", newTradeVersionNumber));
+        String.format("R10M FNMA 7.125 01-15-30 version %s", newTradeVersionNumber));
     SpecializationOf newTradeVersionSpecializationOf = provFactory.newSpecializationOf(newTradeVersionQn, tradeQn);
 
     GregorianCalendar gcStartTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));
@@ -110,7 +107,7 @@ public class TradeEventProcessor {
 
     Activity tradeCorrection = provFactory.newActivity(tradeCorrectionQn, xmlgcStartTime, xmlgcEndTime,
         Collections.emptyList());
-    provFactory.addLabel(tradeCorrection, String.format("Trade correction on %s", odt.toString()));
+    provFactory.addLabel(tradeCorrection, String.format("Trade correction on %s", odt.format(DEFAULT_FORMATTER)));
 
     WasGeneratedBy newTradeVersionWasGeneratedBy = provFactory.newWasGeneratedBy(null, newTradeVersionQn,
         tradeCorrectionQn);

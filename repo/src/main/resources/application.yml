@@ -4,9 +4,3 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-repo:
-  topic:
-    prov-topic: prov
-    trades-topic: trades
-    counterparties-topic: counterparties
-    risk-topic: risk
