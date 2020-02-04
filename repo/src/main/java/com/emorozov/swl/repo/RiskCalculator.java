@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class RiskCalculator {
 
-  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("YYYYMMDD-HHmmSS");
+  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:SS");
 
   @Autowired
   private Namespace ns;

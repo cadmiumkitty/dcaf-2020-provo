@@ -18,7 +18,6 @@ import org.openprovenance.prov.model.WasStartedBy;
 import org.openprovenance.prov.model.WasEndedBy;
 import org.openprovenance.prov.model.WasGeneratedBy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import lombok.SneakyThrows;
@@ -40,7 +39,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Slf4j
 public class TradeEventProcessor {
 
-  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("YYYYMMDD-HHmmSS");
+  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:SS");
 
   @Autowired
   private KafkaTemplate<String, String> kafkaTemplate;
@@ -58,7 +57,7 @@ public class TradeEventProcessor {
 
   private int tradeVersionCounter = 0;
 
-  @Scheduled(fixedRate = 30000)
+  @Scheduled(fixedDelay = 30000, initialDelay = 30000)
   public void sendMessage() {
 
     String counterpartyId = "bank-x";

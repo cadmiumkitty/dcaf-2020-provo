@@ -9,8 +9,8 @@ import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,12 +34,15 @@ public class RiskCalculatorConfiguration {
     final Map<String, Object> props = new HashMap<>();
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka:9092");
     props.put(StreamsConfig.APPLICATION_ID_CONFIG, "risk");
+    props.put(StreamsConfig.POLL_MS_CONFIG, 100);
+    props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
     props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class.getName());
     props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
     props.put(StreamsConfig.producerPrefix(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG), 1);
     props.put(StreamsConfig.producerPrefix(ProducerConfig.ACKS_CONFIG), "1");
+    
     return new KafkaStreamsConfiguration(props);
   }
 
@@ -51,23 +54,18 @@ public class RiskCalculatorConfiguration {
   }
 
   @Bean
-  public KStream<String, String> counterpartyKStream(StreamsBuilder kStreamBuilder) {
-    KStream<String, String> counterparties = kStreamBuilder.stream("counterparties");
-    return counterparties;
-  }
+  public KStream<String, String> provKStream(StreamsBuilder kStreamBuilder, RiskCalculator riskCalculator) {
 
-  @Bean
-  public KStream<String, String> trades(StreamsBuilder kStreamBuilder, KStream<String, String> counterparties,
-      RiskCalculator riskCalculator) {
-
-    // In this simple app just join two KStreams to simulate calculation of
+    // In this simple app just join two KTable to simulate calculation of
     // counterparty risk. Ignore more complex topology required to emit two
     // different messages on different topics, and just record the provenance so
     // that we can visualize it.
-    KStream<String, String> trades = kStreamBuilder.stream("trades");
-    trades.outerJoin(counterparties,
-        (trade, counterparty) -> riskCalculator.calculateRiskAndRecordProvenance(trade, counterparty),
-        JoinWindows.of(Duration.ofSeconds(50))).filterNot((k, v) -> v.startsWith("ERROR")).to("prov");
-    return trades;
+    KTable<String, String> counterparties = kStreamBuilder.table("counterparties");
+    KTable<String, String> trades = kStreamBuilder.table("trades");
+    KStream<String, String> prov = trades.outerJoin(counterparties,
+        (trade, counterparty) -> riskCalculator.calculateRiskAndRecordProvenance(trade, counterparty))
+        .filterNot((k, v) -> v.startsWith("ERROR")).toStream();
+    prov.to("prov");    
+    return prov;
   }
 }

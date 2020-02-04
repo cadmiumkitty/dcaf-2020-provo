@@ -39,7 +39,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Slf4j
 public class CounterpartyEventProcessor {
 
-  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("YYYY-M-MDD-HH:mm:SS");
+  private static final DateTimeFormatter DEFAULT_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:SS");
 
   @Autowired
   private KafkaTemplate<String, String> kafkaTemplate;
@@ -55,7 +55,7 @@ public class CounterpartyEventProcessor {
 
   private int counterpartyVersionCounter = 0;
 
-  @Scheduled(fixedRate = 30000, initialDelay = 10000)
+  @Scheduled(fixedDelay = 60000)
   public void sendMessage() {
 
     String counterpartyId = "bank-x";
