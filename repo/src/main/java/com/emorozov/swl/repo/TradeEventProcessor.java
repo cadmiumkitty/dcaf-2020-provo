@@ -94,9 +94,9 @@ public class TradeEventProcessor {
     QualifiedName traderQn = qn("johnsmith");
     QualifiedName tradeEventProcessorQn = qn("trade-event-processor");
 
-    Entity trade = provFactory.newEntity(tradeQn, "R 10M FNMA 7.125 01-15-30");
+    Entity trade = provFactory.newEntity(tradeQn, "RR 10M FNMA 7.125 01-15-30");
     Entity newTradeVersion = provFactory.newEntity(newTradeVersionQn,
-        String.format("R10M FNMA 7.125 01-15-30 version %s", newTradeVersionNumber));
+        String.format("RR 10M FNMA 7.125 01-15-30 version %s", newTradeVersionNumber));
     SpecializationOf newTradeVersionSpecializationOf = provFactory.newSpecializationOf(newTradeVersionQn, tradeQn);
 
     GregorianCalendar gcStartTime = GregorianCalendar.from(odt.atZoneSameInstant(ZoneId.of("Z")));

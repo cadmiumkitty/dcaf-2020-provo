@@ -42,7 +42,7 @@ public class RiskCalculatorConfiguration {
     props.put(StreamsConfig.REPLICATION_FACTOR_CONFIG, 1);
     props.put(StreamsConfig.producerPrefix(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG), 1);
     props.put(StreamsConfig.producerPrefix(ProducerConfig.ACKS_CONFIG), "1");
-    
+
     return new KafkaStreamsConfiguration(props);
   }
 
@@ -60,12 +60,14 @@ public class RiskCalculatorConfiguration {
     // counterparty risk. Ignore more complex topology required to emit two
     // different messages on different topics, and just record the provenance so
     // that we can visualize it.
+    // Will also need to deal with the case where either trade or counterparty does
+    // not yet exist for the counterparty
     KTable<String, String> counterparties = kStreamBuilder.table("counterparties");
     KTable<String, String> trades = kStreamBuilder.table("trades");
     KStream<String, String> prov = trades.outerJoin(counterparties,
         (trade, counterparty) -> riskCalculator.calculateRiskAndRecordProvenance(trade, counterparty))
         .filterNot((k, v) -> v.startsWith("ERROR")).toStream();
-    prov.to("prov");    
+    prov.to("prov");
     return prov;
   }
 }
