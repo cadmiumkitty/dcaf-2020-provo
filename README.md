@@ -16,6 +16,21 @@ The purpose of this demo is to show capturing of the provenance information usin
 
 ## Running the demo
 
+Build individual projects under `repo` (trade and counterparty events, risk calculator and event processor) and `connect` (Kafka Connect SPARQL sink for PROV) with `mvn clean package`.
+
+Build and start containers with:
+
 ```
 docker-compose up -d --build
 ```
+
+Once containers are up and running, you can check that PROV triples are being created in Jena by going to http://localhost:3030/dataset.html?tab=query&ds=/dcaf and issuing simple SPARQL query such as:
+
+```
+SELECT *
+WHERE {
+  ?s ?p ?o
+}
+```
+
+To view visualization go to http://localhost:5000/ and select endpoint http://fuseki:3030/dcaf/query telling PROV-O-Viz to `Ignore Named Graphs`.

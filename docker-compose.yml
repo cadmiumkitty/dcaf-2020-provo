@@ -46,4 +46,4 @@ services:
     ports:
       - 3030:3030
     volumes:
-      - ./fuseki-volume-dcaf:/apache-jena-fuseki-3.14.0/dcaf
+      - ./fuseki-volume-dcaf:/apache-jena-fuseki-4.1.0/dcaf
